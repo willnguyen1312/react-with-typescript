@@ -1,34 +1,14 @@
 import React from "react";
+import { useMousePosition } from "./useMousePosition";
 
-class Text extends React.Component {
-  constructor(props: any) {
-    super(props);
-    debugger;
-  }
-  render() {
-    return <h1>Text</h1>;
-  }
-}
+const Rock = () => {
+  const { x, y } = useMousePosition();
+  return (
+    <div>
+      <h1 data-testid="xPosition">{x}</h1>
+      <h1 data-testid="yPosition">{y}</h1>
+    </div>
+  );
+};
 
-class Playground extends React.Component {
-  state = {
-    display: true
-  };
-
-  toggle = () => {
-    this.setState({
-      display: !this.state.display
-    });
-  };
-  render() {
-    const { display } = this.state;
-    return (
-      <div>
-        {display ? <Text /> : null}
-        <button onClick={this.toggle}>Toggle</button>
-      </div>
-    );
-  }
-}
-
-export default Playground;
+export default Rock;

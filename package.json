@@ -8,9 +8,13 @@
     "@types/node": "12.0.0",
     "@types/react": "16.8.17",
     "@types/react-dom": "16.8.4",
+    "lodash": "^4.17.11",
+    "object-fit-images": "^3.2.4",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-scripts": "3.0.1",
+    "react-testing-library": "^8.0.1",
+    "ts-pathof": "^1.3.1",
     "typescript": "3.4.5"
   },
   "scripts": {
@@ -35,8 +39,11 @@
     ]
   },
   "devDependencies": {
+    "@testing-library/react": "^8.0.1",
+    "@types/lodash": "^4.14.133",
     "@types/reach__router": "^1.2.4",
     "@types/webpack-env": "^1.13.9",
+    "jest-dom": "^3.4.0",
     "utility-types": "^3.7.0"
   }
 }
