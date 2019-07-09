@@ -1,14 +1,16 @@
 import React from "react";
-import { useMousePosition } from "./useMousePosition";
 
-const Rock = () => {
-  const { x, y } = useMousePosition();
-  return (
-    <div>
-      <h1 data-testid="xPosition">{x}</h1>
-      <h1 data-testid="yPosition">{y}</h1>
-    </div>
-  );
-};
-
-export default Rock;
+export default class Playground extends React.Component {
+  renderSomethingOdd = () => {
+    debugger;
+    return <h1>Fuck Yeah</h1>;
+  };
+  render() {
+    return (
+      <>
+        <h1>Hello</h1>
+        {this.renderSomethingOdd()}
+      </>
+    );
+  }
+}
