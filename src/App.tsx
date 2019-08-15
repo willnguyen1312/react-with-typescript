@@ -1,9 +1,9 @@
 import React, { FC } from "react";
-import HOC from "./components/HOC";
-import RPS from "./components/RPS";
-import Playground from "./components/Playground";
-// import Playground from "./components/Sample";
-import cover from "./axo.jpg";
+// import HOC from "./components/HOC";
+// import RPS from "./components/RPS";
+// import Playground from "./components/Playground";
+import Slider from "./components/Slider";
+// import cover from "./axo.jpg";
 
 const Hello = () => <h1>Hello</h1>;
 
@@ -15,7 +15,9 @@ const App = () => {
       {/* <Hi AAA={<Hello />} /> */}
       {/* <HOC /> */}
       {/* <RPS /> */}
-      <Playground />
+      {/* <Playground /> */}
+      {/* <Sample /> */}
+      <Slider />
     </div>
   );
 };
