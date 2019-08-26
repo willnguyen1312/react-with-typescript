@@ -1,6 +1,7 @@
 import React, { FC, useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 // import console from "console";
+// import console from "console";
 
 const SliderWrapper = styled.div`
   width: 100%;
@@ -57,22 +58,26 @@ class Slider extends React.Component<SliderProps> {
   };
 
   componentDidMount = () => {
-    window.addEventListener("mousemove", this.handleMouseMove);
-    window.addEventListener("mouseup", this.handleMouseUp);
+    window.addEventListener("pointerdown", event => {
+      console.log(event.clientX);
+    });
+    // window.addEventListener("mousemove", this.handleMouseMove);
+    // window.addEventListener("mouseup", this.handleMouseUp);
 
-    const image = new Image();
-    image.src = "https://picsum.photos/id/516/1200/800";
+    // const image = new Image();
+    // image.src = "https://picsum.photos/id/516/1200/800";
 
-    image.style.maxHeight = "100%";
-    image.style.maxWidth = "100%";
+    // image.style.maxHeight = "100%";
+    // image.style.maxWidth = "100%";
 
-    image.onload = () => {
-      const wrapper = this.containerRef.current as HTMLDivElement;
-      wrapper.appendChild(image);
-    };
+    // image.onload = () => {
+    //   const wrapper = this.containerRef.current as HTMLDivElement;
+    //   wrapper.appendChild(image);
+    // };
   };
 
   handleMouseMove = (event: MouseEvent) => {
+    const {metaKey} = event
     if (this.state.isDragable) {
       const { clientX } = event;
       const { left, right } = this.getWrapperPosition();

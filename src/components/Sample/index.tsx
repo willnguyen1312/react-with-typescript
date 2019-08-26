@@ -1,36 +1,31 @@
-import * as React from "react";
-import loadImage from "blueimp-load-image";
-import image from "../../images/rotate.jpg";
+import React, { Component } from "react";
+import { Document, Page } from "react-pdf/dist/entry.webpack";
 
-class ImageViewer extends React.Component<any, any> {
-  imageCanvas = React.createRef<HTMLDivElement>();
+import sample1 from "./pdfs/sample1.pdf";
+import sample2 from "./pdfs/sample2.pdf";
 
-  public componentDidMount() {
-    loadImage(
-      image,
-      img => {
-        img.className = "fit_to_parent"; // css class: { max-width: 100%; max-height: 100%; }
-        this.imageCanvas.current!.appendChild(img);
-      },
-      { orientation: true }
-      // {}
-    );
-  }
+export default class Sampe extends Component {
+  state = {
+    numPages: null,
+    pageNumber: 1
+  };
 
-  public render() {
+  onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+    this.setState({ numPages });
+  };
+
+  render() {
+    const { pageNumber, numPages } = this.state;
+
     return (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center"
-        }}
-        ref={this.imageCanvas}
-      />
+      <div>
+        <Document file={sample1} onLoadSuccess={this.onDocumentLoadSuccess}>
+          <Page pageNumber={pageNumber} />
+        </Document>
+        <p>
+          Page {pageNumber} of {numPages}
+        </p>
+      </div>
     );
   }
 }
-
-export default ImageViewer;
