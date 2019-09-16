@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import ReactDOM from "react-dom";
 import { render, fireEvent } from "@testing-library/react";
 
@@ -65,22 +65,35 @@ class Modal extends React.Component<ModalProps> {
   }
 }
 
-test("modal shows the children and a close button", () => {
-  // Arrange
-  const handleClose = jest.fn();
+const App = () => {
+  const [isShowModal, setIsShowModal] = useState(false);
 
-  // Act
-  const { getByText } = render(
-    <Modal onClose={handleClose}>
-      <div>test</div>
-    </Modal>
+  const toggleShowModal = () => setIsShowModal(!isShowModal);
+
+  return (
+    <>
+      {isShowModal && (
+        <Modal onClose={toggleShowModal}>
+          <div>Hello! I'm a modal</div>
+        </Modal>
+      )}
+      <button onClick={toggleShowModal}>Toggle Modal</button>
+    </>
   );
-  // Assert
-  expect(getByText("test")).toBeTruthy();
+};
 
+test("modal shows the children and a close button", () => {
   // Act
-  fireEvent.click(getByText(/close/i));
+  const { debug, queryByText } = render(<App />);
 
-  // Assert
-  expect(handleClose).toHaveBeenCalledTimes(1);
+  const button = queryByText("Toggle Modal") as HTMLButtonElement;
+
+  expect(button).toBeTruthy();
+
+  fireEvent.click(button);
+
+  expect(queryByText("Hello! I'm a modal")).toBeTruthy();
+
+  fireEvent.click(queryByText(/close/i) as HTMLButtonElement);
+  expect(queryByText("Hello! I'm a modal")).toBeFalsy();
 });
