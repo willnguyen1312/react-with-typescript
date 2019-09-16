@@ -1,31 +1,32 @@
-import React, { Component } from "react";
-import { Document, Page } from "react-pdf/dist/entry.webpack";
+import React from "react";
 
-import sample1 from "./pdfs/sample1.pdf";
-import sample2 from "./pdfs/sample2.pdf";
+const Child = ({ onClick }: any) => <div onClick={onClick}>Child</div>;
 
-export default class Sampe extends Component {
-  state = {
-    numPages: null,
-    pageNumber: 1
-  };
+interface ParentProps {
+  render: React.ReactNode;
+}
 
-  onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-    this.setState({ numPages });
-  };
+const callAll = (funcs: any[]) => () => funcs.forEach(func => func());
 
+class Parent extends React.Component<ParentProps> {
+  componentDidMount = () => console.log("Parent2");
   render() {
-    const { pageNumber, numPages } = this.state;
-
-    return (
-      <div>
-        <Document file={sample1} onLoadSuccess={this.onDocumentLoadSuccess}>
-          <Page pageNumber={pageNumber} />
-        </Document>
-        <p>
-          Page {pageNumber} of {numPages}
-        </p>
-      </div>
-    );
+    const { render } = this.props;
+    const content =
+      React.isValidElement(render) &&
+      React.cloneElement(render, {
+        // @ts-ignore
+        onClick: callAll([render.props.onClick, () => console.log("parent")])
+      });
+    return content;
   }
 }
+
+class Sample extends React.Component {
+  componentDidMount = () => console.log("Parent1");
+  render() {
+    return <Parent render={<Child onClick={() => console.log("child")} />} />;
+  }
+}
+
+export default Sample;
