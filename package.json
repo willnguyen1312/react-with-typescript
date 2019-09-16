@@ -96,7 +96,7 @@
     ]
   },
   "devDependencies": {
-    "@testing-library/react": "^9.1.2",
+    "@testing-library/react": "^9.1.4",
     "@types/blueimp-load-image": "^2.23.1",
     "@types/lodash": "^4.14.133",
     "@types/reach__router": "^1.2.4",
