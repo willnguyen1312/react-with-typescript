@@ -1,6 +1,13 @@
 import React from "react";
 
-const Child = ({ onClick }: any) => <div onClick={onClick}>Child</div>;
+const Child = ({ onClick }: any) => (
+  <div onClick={onClick}>
+    <img
+      src="https://picsum.photos/id/846/200/300"
+      onLoad={e => console.log(e)}
+    />
+  </div>
+);
 
 interface ParentProps {
   render: React.ReactNode;

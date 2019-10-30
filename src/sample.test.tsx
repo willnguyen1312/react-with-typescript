@@ -1,14 +1,11 @@
-const func = jest.fn();
+import { run } from "./sample";
+import { getFactor } from "./getFactor";
+
+jest.mock("./getFactor");
 
 describe("Sample test", () => {
-  beforeAll(() => {
-    func.mockReturnValue(10);
-  });
-  afterAll(() => jest.clearAllMocks());
-
   it("should work", () => {
-    func.mockReturnValueOnce(9);
-    expect(func()).toBe(9);
-    expect(func()).toBe(10);
+    (getFactor as jest.Mock<any>).mockReturnValueOnce(20);
+    expect(run()).toBe(20);
   });
 });

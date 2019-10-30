@@ -49,7 +49,7 @@ const makeCounter = <P extends InjectedCounterProps>(
       const { minValue, maxValue, ...props } = this.props;
       return (
         <Component
-          {...props as P}
+          {...(props as P)}
           value={this.state.value}
           onIncrement={this.increment}
           onDecrement={this.decrement}
