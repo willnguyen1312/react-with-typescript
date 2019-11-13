@@ -1,39 +1,82 @@
 import React from "react";
+import PropTypes from "prop-types";
+import { withStyles } from "@material-ui/core/styles";
+import red from "@material-ui/core/colors/red";
+import blue from "@material-ui/core/colors/blue";
+import SvgIcon from "@material-ui/core/SvgIcon";
 
-const Child = ({ onClick }: any) => (
-  <div onClick={onClick}>
-    <img
-      src="https://picsum.photos/id/846/200/300"
-      onLoad={e => console.log(e)}
-    />
-  </div>
-);
+import style from "./Sample.module.css";
 
-interface ParentProps {
-  render: React.ReactNode;
-}
-
-const callAll = (funcs: any[]) => () => funcs.forEach(func => func());
-
-class Parent extends React.Component<ParentProps> {
-  componentDidMount = () => console.log("Parent2");
-  render() {
-    const { render } = this.props;
-    const content =
-      React.isValidElement(render) &&
-      React.cloneElement(render, {
-        // @ts-ignore
-        onClick: callAll([render.props.onClick, () => console.log("parent")])
-      });
-    return content;
+const styles = (theme: any) => ({
+  root: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "flex-end"
+  },
+  icon: {
+    margin: theme.spacing.unit * 2
+  },
+  iconHover: {
+    margin: theme.spacing.unit * 2,
+    "&:hover": {
+      color: red[800]
+    }
+  },
+  big: {
+    fill: "red"
   }
+});
+
+function HomeIcon(props: any) {
+  return (
+    <SvgIcon {...props}>
+      <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+    </SvgIcon>
+  );
 }
 
-class Sample extends React.Component {
-  componentDidMount = () => console.log("Parent1");
-  render() {
-    return <Parent render={<Child onClick={() => console.log("child")} />} />;
-  }
+function SvgIcons(props: any) {
+  const { classes } = props;
+  return (
+    <div className={classes.root}>
+      <HomeIcon classes={{ root: classes.big }} className={classes.icon} />
+      <HomeIcon
+        classes={{ root: (style as any).root }}
+        className={classes.icon}
+      />
+      {/* <HomeIcon className={classes.icon} color="primary" />
+      <HomeIcon className={classes.icon} color="secondary" />
+      <HomeIcon className={classes.icon} color="action" />
+      <HomeIcon
+        className={classes.iconHover}
+        color="error"
+        style={{ fontSize: 30 }}
+      />
+      <HomeIcon color="disabled" className={classes.icon} fontSize="large" />
+      <HomeIcon
+        className={classes.icon}
+        color="primary"
+        fontSize="large"
+        component={(svgProps: any) => (
+          <svg {...svgProps}>
+            <defs>
+              <linearGradient id="gradient1">
+                <stop offset="30%" stopColor={blue[400]} />
+                <stop offset="70%" stopColor={red[400]} />
+              </linearGradient>
+            </defs>
+            {React.cloneElement(svgProps.children[0], {
+              fill: "url(#gradient1)"
+            })}
+          </svg>
+        )}
+      /> */}
+    </div>
+  );
 }
 
-export default Sample;
+SvgIcons.propTypes = {
+  classes: PropTypes.object.isRequired
+};
+
+export default withStyles(styles)(SvgIcons);
