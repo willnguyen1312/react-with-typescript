@@ -1,13 +1,5 @@
-import { shouldMock } from "./getFactor";
+import { yeah } from "./pdf/hi";
 
-jest.mock("./getFactor");
-
-describe("Sample test", () => {
-  beforeEach(() => jest.clearAllMocks());
-  it("should work first", () => {
-    (shouldMock as jest.Mock).mockReturnValue(30);
-    console.log(shouldMock());
-    const { shouldNotMock } = jest.requireMock("./getFactor.ts");
-    console.log(shouldNotMock());
-  });
+test("should work", () => {
+  expect(yeah()).toBe(5);
 });

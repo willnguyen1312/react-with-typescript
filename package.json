@@ -141,7 +141,8 @@
     "modulePaths": [],
     "moduleNameMapper": {
       "^react-native$": "react-native-web",
-      "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy"
+      "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy",
+      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga|csv|swf|pdf)$": "<rootDir>/test/__mocks__/fileMock.js"
     },
     "moduleFileExtensions": [
       "web.js",
@@ -153,7 +154,8 @@
       "json",
       "web.jsx",
       "jsx",
-      "node"
+      "node",
+      "pdf"
     ],
     "watchPlugins": [
       "jest-watch-typeahead/filename",
