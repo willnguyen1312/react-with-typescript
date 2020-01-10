@@ -3,6 +3,7 @@ import React, { FC } from "react";
 // import RPS from "./components/RPS";
 // import Playground from "./components/Playground";
 import Sample from "./components/Sample";
+import PDF from "./pdf";
 // import Slider from "./components/Slider";
 // import cover from "./axo.jpg";
 
@@ -17,7 +18,8 @@ const App = () => {
       {/* <HOC /> */}
       {/* <RPS /> */}
       {/* <Playground /> */}
-      <Sample />
+      {/* <Sample /> */}
+      <PDF />
       {/* <Slider /> */}
     </div>
   );
