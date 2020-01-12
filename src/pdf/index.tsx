@@ -1,6 +1,12 @@
 import React, { Component } from "react";
 import { Document, Page } from "react-pdf/dist/entry.webpack";
 import "react-pdf/dist/Page/AnnotationLayer.css";
+import { PDFDocumentProxy, PDFPageProxy, TextContent } from "pdfjs-dist";
+import greenlet from "greenlet";
+import { dump } from "../worker";
+
+// const getNum = greenlet(calculatePrimes);
+const awesomeDump = greenlet(dump);
 
 export default class PDF extends Component {
   state = {
@@ -14,8 +20,16 @@ export default class PDF extends Component {
     });
   };
 
-  onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-    this.setState({ numPages });
+  onDocumentLoadSuccess = async (arg: PDFDocumentProxy) => {
+    this.setState({ numPages: arg.numPages });
+    const result: TextContent[] = [];
+    for (let index = 1; index <= arg.numPages; index++) {
+      const page = await arg.getPage(index);
+      const item = await page.getTextContent();
+      result.push(item);
+    }
+    console.log(result);
+    awesomeDump(result);
   };
 
   render() {

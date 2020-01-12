@@ -11,10 +11,16 @@ export const calculatePrimes = (iterations: number, multiplier: number) => {
         break;
       }
     }
+
     if (isPrime) {
       primes.push(candidate);
     }
   }
 
-  return primes;
+  return Promise.resolve(primes);
+};
+
+export const dump = (arg: any) => {
+  console.log(arg);
+  return Promise.resolve(3);
 };
