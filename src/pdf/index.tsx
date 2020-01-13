@@ -1,15 +1,9 @@
 import React, { useState } from "react";
+import debounce from "lodash.debounce";
 import { Document, Page } from "react-pdf/dist/entry.webpack";
 import "react-pdf/dist/Page/AnnotationLayer.css";
-import { PDFDocumentProxy, PDFPageProxy, TextContent } from "pdfjs-dist";
+import { PDFDocumentProxy, TextContent } from "pdfjs-dist";
 
-// this.setState({ numPages: arg.numPages });
-//     const result: TextContent[] = [];
-//     for (let index = 1; index <= arg.numPages; index++) {
-//       const page = await arg.getPage(index);
-//       const item = await page.getTextContent();
-//       result.push(item);
-//     }
 const PDF = () => {
   const [textContexts, setTextContents] = useState<TextContent[]>([]);
   const [isSearchWholeWord, setIsSearchWholeWord] = useState<boolean>(false);
@@ -17,8 +11,6 @@ const PDF = () => {
   const [file, setFile] = useState<string>("/sample.pdf");
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrrentPage] = useState<number>(1);
-  const [pageWidth, setPageWidth] = useState<number>(0);
-  const [pageHeight, setPageHeight] = useState<number>(0);
 
   const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFile(
@@ -37,11 +29,6 @@ const PDF = () => {
       textContents.push(item);
     }
     setTextContents(textContents);
-  };
-
-  const onPageLoadSuccess = async ({ view }: PDFPageProxy) => {
-    setPageWidth(view[2]);
-    setPageHeight(view[3]);
   };
 
   const goPrevPage = () => setCurrrentPage(Math.max(1, currentPage - 1));
@@ -118,12 +105,7 @@ const PDF = () => {
         }}
         onLoadSuccess={onDocumentLoadSuccess}
       >
-        <Page
-          loading={""}
-          onLoadSuccess={onPageLoadSuccess}
-          scale={1}
-          pageNumber={currentPage}
-        />
+        <Page loading={""} scale={1} pageNumber={currentPage} />
       </Document>
     </div>
   );
