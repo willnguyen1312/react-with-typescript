@@ -1,14 +1,108 @@
 import React, { useState } from "react";
-import debounce from "lodash.debounce";
+import { range } from "lodash";
 import { Document, Page } from "react-pdf/dist/entry.webpack";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import { PDFDocumentProxy, TextContent } from "pdfjs-dist";
 
+type Matches = {
+  begin: {
+    divIdx: number;
+    offset: number;
+  };
+  end: {
+    divIdx: number;
+    offset: number;
+  };
+}[];
+
+const matches: Matches = [
+  // {
+  //   begin: {
+  //     divIdx: 14,
+  //     offset: 1
+  //   },
+  //   end: {
+  //     divIdx: 14,
+  //     offset: 5
+  //   }
+  // },
+  // {
+  //   begin: {
+  //     divIdx: 14,
+  //     offset: 7
+  //   },
+  //   end: {
+  //     divIdx: 14,
+  //     offset: 10
+  //   }
+  // },
+  // {
+  //   begin: {
+  //     divIdx: 14,
+  //     offset: 11
+  //   },
+  //   end: {
+  //     divIdx: 14,
+  //     offset: 15
+  //   }
+  // }
+  // {
+  //   begin: {
+  //     divIdx: 10,
+  //     offset: 1
+  //   },
+  //   end: {
+  //     divIdx: 15,
+  //     offset: 5
+  //   }
+  // },
+  {
+    begin: {
+      divIdx: 11,
+      offset: 1
+    },
+    end: {
+      divIdx: 11,
+      offset: 5
+    }
+  },
+  {
+    begin: {
+      divIdx: 14,
+      offset: 21
+    },
+    end: {
+      divIdx: 15,
+      offset: 1
+    }
+  }
+];
+
+const middleIndexes = new Set(
+  matches
+    .map(match => {
+      if (match.end.divIdx - match.begin.divIdx > 1) {
+        return range(match.begin.divIdx + 1, match.end.divIdx);
+      }
+      return [];
+    })
+    .reduce((acc, cur) => acc.concat(cur), [])
+);
+
+const affectedIndexes = matches
+  .map(match => {
+    return range(match.begin.divIdx, match.end.divIdx + 1);
+  })
+  .reduce((acc, cur) => acc.concat(cur), []);
+
+const lookupAffectedIndexes = new Set(affectedIndexes);
+
 const PDF = () => {
   const [textContexts, setTextContents] = useState<TextContent[]>([]);
-  const [isSearchWholeWord, setIsSearchWholeWord] = useState<boolean>(false);
+  // const [isSearchWholeWord, setIsSearchWholeWord] = useState<boolean>(false);
   const [isHightlightAll, setIsHightlightAll] = useState<boolean>(false);
   const [file, setFile] = useState<string>("/sample.pdf");
+  const [searchPhrase, setSearchPhrase] = useState<string>("");
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrrentPage] = useState<number>(1);
 
@@ -29,6 +123,7 @@ const PDF = () => {
       textContents.push(item);
     }
     setTextContents(textContents);
+    (window as any).textContents = textContents;
   };
 
   const goPrevPage = () => setCurrrentPage(Math.max(1, currentPage - 1));
@@ -72,9 +167,18 @@ const PDF = () => {
           <span>{currentPage === numPages && "Last page"}</span>
         </div>
         <div>
-          <span>Search Phrase:</span>
-          <input type="text" name="search" id="searrch" placeholder="text" />
-          <label htmlFor="wholeword">
+          <label htmlFor="search">
+            Search Phrase:
+            <input
+              value={searchPhrase}
+              type="text"
+              name="search"
+              id="search"
+              placeholder="text"
+              onChange={({ target }) => setSearchPhrase(target.value)}
+            />
+          </label>
+          {/* <label htmlFor="wholeword">
             Whole word?
             <input
               type="checkbox"
@@ -83,7 +187,9 @@ const PDF = () => {
               checked={isSearchWholeWord}
               onChange={() => setIsSearchWholeWord(!isSearchWholeWord)}
             />
-          </label>
+          </label> */}
+          <button onClick={goPrevPage}>Previous result</button>
+          <button onClick={goNextPage}>Next result</button>
           <label htmlFor="hightlightAll">
             Hightlight all?
             <input
@@ -105,7 +211,68 @@ const PDF = () => {
         }}
         onLoadSuccess={onDocumentLoadSuccess}
       >
-        <Page loading={""} scale={1} pageNumber={currentPage} />
+        <Page
+          loading={""}
+          scale={1}
+          pageNumber={currentPage}
+          customTextRenderer={({ str, itemIndex }) => {
+            if (!lookupAffectedIndexes.has(itemIndex)) {
+              return <span>{str}</span>;
+            }
+
+            if (middleIndexes.has(itemIndex)) {
+              return <mark>{str}</mark>;
+            }
+
+            let renderStr = str;
+            let trackSameIdx = 0;
+            for (const { begin, end } of matches) {
+              if (begin.divIdx === end.divIdx && begin.divIdx === itemIndex) {
+                renderStr = `${renderStr.slice(
+                  0,
+                  begin.offset + trackSameIdx
+                )}<mark>${renderStr.slice(
+                  begin.offset + trackSameIdx,
+                  end.offset + trackSameIdx
+                )}</mark>${renderStr.slice(end.offset + trackSameIdx)}`;
+                trackSameIdx += 13; // <mark></mark> => 13 character length
+              } else if (
+                begin.divIdx !== end.divIdx &&
+                begin.divIdx === itemIndex
+              ) {
+                renderStr = `${renderStr.slice(
+                  0,
+                  begin.offset
+                )}<mark>${renderStr.slice(begin.offset)}</mark>`;
+              } else if (
+                begin.divIdx !== end.divIdx &&
+                end.divIdx === itemIndex
+              ) {
+                renderStr = `<mark>${renderStr.slice(
+                  0,
+                  end.offset
+                )}</mark>${renderStr.slice(end.offset)}`;
+              }
+            }
+
+            return (
+              <span
+                dangerouslySetInnerHTML={{
+                  __html: renderStr
+                }}
+              ></span>
+            );
+
+            // const regex = RegExp(searchPhrase, "gi");
+            // return (
+            //   <span
+            //     dangerouslySetInnerHTML={{
+            //       __html: str.replace(regex, match => `<mark>${match}</mark>`)
+            //     }}
+            //   ></span>
+            // );
+          }}
+        />
       </Document>
     </div>
   );
