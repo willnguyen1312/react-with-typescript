@@ -4,7 +4,7 @@ import { Document, Page } from "react-pdf/dist/entry.webpack";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import { PDFDocumentProxy, TextContent } from "pdfjs-dist";
 
-type Matches = {
+type Match = {
   begin: {
     divIdx: number;
     offset: number;
@@ -13,92 +13,93 @@ type Matches = {
     divIdx: number;
     offset: number;
   };
-}[];
+};
 
-const matches: Matches = [
-  // {
-  //   begin: {
-  //     divIdx: 14,
-  //     offset: 1
-  //   },
-  //   end: {
-  //     divIdx: 14,
-  //     offset: 5
-  //   }
-  // },
-  // {
-  //   begin: {
-  //     divIdx: 14,
-  //     offset: 7
-  //   },
-  //   end: {
-  //     divIdx: 14,
-  //     offset: 10
-  //   }
-  // },
-  // {
-  //   begin: {
-  //     divIdx: 14,
-  //     offset: 11
-  //   },
-  //   end: {
-  //     divIdx: 14,
-  //     offset: 15
-  //   }
-  // }
-  // {
-  //   begin: {
-  //     divIdx: 10,
-  //     offset: 1
-  //   },
-  //   end: {
-  //     divIdx: 15,
-  //     offset: 5
-  //   }
-  // },
-  {
-    begin: {
-      divIdx: 11,
-      offset: 1
-    },
-    end: {
-      divIdx: 11,
-      offset: 5
-    }
-  },
-  {
-    begin: {
-      divIdx: 14,
-      offset: 21
-    },
-    end: {
-      divIdx: 15,
-      offset: 1
-    }
-  }
-];
+// const matches: Match[] = [
+// {
+//   begin: {
+//     divIdx: 14,
+//     offset: 1
+//   },
+//   end: {
+//     divIdx: 14,
+//     offset: 5
+//   }
+// },
+// {
+//   begin: {
+//     divIdx: 14,
+//     offset: 7
+//   },
+//   end: {
+//     divIdx: 14,
+//     offset: 10
+//   }
+// },
+// {
+//   begin: {
+//     divIdx: 14,
+//     offset: 11
+//   },
+//   end: {
+//     divIdx: 14,
+//     offset: 15
+//   }
+// }
+// {
+//   begin: {
+//     divIdx: 10,
+//     offset: 1
+//   },
+//   end: {
+//     divIdx: 15,
+//     offset: 5
+//   }
+// },
+//   {
+//     begin: {
+//       divIdx: 11,
+//       offset: 1
+//     },
+//     end: {
+//       divIdx: 11,
+//       offset: 5
+//     }
+//   },
+//   {
+//     begin: {
+//       divIdx: 14,
+//       offset: 21
+//     },
+//     end: {
+//       divIdx: 15,
+//       offset: 1
+//     }
+//   }
+// ];
 
-const middleIndexes = new Set(
-  matches
-    .map(match => {
-      if (match.end.divIdx - match.begin.divIdx > 1) {
-        return range(match.begin.divIdx + 1, match.end.divIdx);
-      }
-      return [];
-    })
-    .reduce((acc, cur) => acc.concat(cur), [])
-);
+// const middleIndexes = new Set(
+//   matches
+//     .map(match => {
+//       if (match.end.divIdx - match.begin.divIdx > 1) {
+//         return range(match.begin.divIdx + 1, match.end.divIdx);
+//       }
+//       return [];
+//     })
+//     .reduce((acc, cur) => acc.concat(cur), [])
+// );
 
-const affectedIndexes = matches
-  .map(match => {
-    return range(match.begin.divIdx, match.end.divIdx + 1);
-  })
-  .reduce((acc, cur) => acc.concat(cur), []);
+// const affectedIndexes = matches
+//   .map(match => {
+//     return range(match.begin.divIdx, match.end.divIdx + 1);
+//   })
+//   .reduce((acc, cur) => acc.concat(cur), []);
 
-const lookupAffectedIndexes = new Set(affectedIndexes);
+// const lookupAffectedIndexes = new Set(affectedIndexes);
 
 const PDF = () => {
-  const [textContexts, setTextContents] = useState<TextContent[]>([]);
+  // const [matches, setMatches] = useState<Match[]>([]);
+  const [textContents, setTextContents] = useState<TextContent[]>([]);
   // const [isSearchWholeWord, setIsSearchWholeWord] = useState<boolean>(false);
   const [isHightlightAll, setIsHightlightAll] = useState<boolean>(false);
   const [file, setFile] = useState<string>("/sample.pdf");
@@ -126,9 +127,120 @@ const PDF = () => {
     (window as any).textContents = textContents;
   };
 
+  const calculatePhraseMatch = (page: number): number[] => {
+    const result: number[] = [];
+    if (textContents.length && searchPhrase) {
+      const query = searchPhrase.toLowerCase();
+      const queryLen = query.length;
+      const pageContent = textContents[page - 1].items
+        .reduce((acc, cur) => acc + cur.str, "")
+        .toLowerCase();
+
+      let matchIdx = -queryLen;
+      while (true) {
+        matchIdx = pageContent.indexOf(query, matchIdx + queryLen);
+        if (matchIdx === -1) {
+          break;
+        }
+        result.push(matchIdx);
+      }
+    }
+
+    return result;
+  };
+
   const goPrevPage = () => setCurrrentPage(Math.max(1, currentPage - 1));
 
   const goNextPage = () => setCurrrentPage(Math.min(numPages, currentPage + 1));
+
+  const converMatches = (indexMatches: number[]): Match[] => {
+    if (!indexMatches.length) {
+      return [];
+    }
+
+    const textContentItemsStr = textContents[currentPage - 1].items.map(
+      item => item.str
+    );
+
+    let i = 0,
+      iIndex = 0;
+    const end = textContentItemsStr.length - 1;
+    const queryLen = searchPhrase.length;
+    const result: Match[] = [];
+
+    for (let m = 0, mm = indexMatches.length; m < mm; m++) {
+      // Calculate the start position.
+      let matchIdx = indexMatches[m];
+
+      // Loop over the divIdxs.
+      while (i !== end && matchIdx >= iIndex + textContentItemsStr[i].length) {
+        iIndex += textContentItemsStr[i].length;
+        i++;
+      }
+
+      if (i === textContentItemsStr.length) {
+        console.error("Could not find a matching mapping");
+      }
+
+      const match: Partial<Match> = {
+        begin: {
+          divIdx: i,
+          offset: matchIdx - iIndex
+        }
+      };
+
+      matchIdx += queryLen;
+
+      // Somewhat the same array as above, but use > instead of >= to get
+      // the end position right.
+      while (i !== end && matchIdx > iIndex + textContentItemsStr[i].length) {
+        iIndex += textContentItemsStr[i].length;
+        i++;
+      }
+
+      match.end = {
+        divIdx: i,
+        offset: matchIdx - iIndex
+      };
+      result.push(match as Match);
+    }
+    return result as Match[];
+  };
+
+  const indexMatches = calculatePhraseMatch(currentPage);
+  const matches: Match[] = converMatches(indexMatches);
+
+  const calculateTotalMatch = () => {
+    const result: number[] = [];
+    if (numPages === 0) {
+      return result;
+    }
+    for (let page = 1; page <= numPages; page++) {
+      const indexMatches = calculatePhraseMatch(page);
+      result.push(...indexMatches);
+    }
+    return result;
+  };
+  const indexMatchesTotal = calculateTotalMatch();
+
+  const middleIndexes = new Set(
+    matches
+      .map(match => {
+        if (match.end.divIdx - match.begin.divIdx > 1) {
+          return range(match.begin.divIdx + 1, match.end.divIdx);
+        }
+        return [];
+      })
+      .reduce((acc, cur) => acc.concat(cur), [])
+  );
+
+  const affectedIndexes = matches
+    .map(match => {
+      return range(match.begin.divIdx, match.end.divIdx + 1);
+    })
+    .reduce((acc, cur) => acc.concat(cur), []);
+
+  const lookupAffectedIndexes = new Set(affectedIndexes);
 
   return (
     <div
@@ -178,16 +290,6 @@ const PDF = () => {
               onChange={({ target }) => setSearchPhrase(target.value)}
             />
           </label>
-          {/* <label htmlFor="wholeword">
-            Whole word?
-            <input
-              type="checkbox"
-              name="wholeword"
-              id="wholeword"
-              checked={isSearchWholeWord}
-              onChange={() => setIsSearchWholeWord(!isSearchWholeWord)}
-            />
-          </label> */}
           <button onClick={goPrevPage}>Previous result</button>
           <button onClick={goNextPage}>Next result</button>
           <label htmlFor="hightlightAll">
@@ -201,6 +303,9 @@ const PDF = () => {
             />
           </label>
         </div>
+        {indexMatchesTotal.length > 0 && (
+          <h1>Total Matches: {indexMatchesTotal.length}</h1>
+        )}
       </div>
       <Document
         loading={""}
@@ -262,15 +367,6 @@ const PDF = () => {
                 }}
               ></span>
             );
-
-            // const regex = RegExp(searchPhrase, "gi");
-            // return (
-            //   <span
-            //     dangerouslySetInnerHTML={{
-            //       __html: str.replace(regex, match => `<mark>${match}</mark>`)
-            //     }}
-            //   ></span>
-            // );
           }}
         />
       </Document>
