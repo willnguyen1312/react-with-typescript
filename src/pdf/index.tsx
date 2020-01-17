@@ -16,9 +16,10 @@ type Match = {
 };
 
 const PDF = () => {
+  const wrapperRef = React.createRef<HTMLDivElement>();
   const [textContents, setTextContents] = useState<TextContent[]>([]);
   const [isHightlightAll, setIsHightlightAll] = useState<boolean>(false);
-  const [file, setFile] = useState<string>("/sample.pdf");
+  const [file, setFile] = useState<string>("/sample1.pdf");
   const [searchPhrase, setSearchPhrase] = useState<string>("");
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrrentPage] = useState<number>(1);
@@ -158,6 +159,25 @@ const PDF = () => {
 
   const lookupAffectedIndexes = new Set(affectedIndexes);
 
+  const logStuff = () => console.log(numPages);
+
+  const runStuff = () => {
+    const wrapper = wrapperRef.current;
+    if (wrapper) {
+      setTimeout(() => {
+        const as = wrapper.querySelectorAll("a");
+        const es = wrapper.querySelectorAll("img");
+        if (as.length) {
+          as[0].addEventListener("click", event => {
+            event.preventDefault();
+            (window as any).ele = event.target;
+            logStuff();
+          });
+        }
+      }, 500);
+    }
+  };
+
   return (
     <div
       style={{
@@ -223,69 +243,73 @@ const PDF = () => {
           <h1>Total Matches: {indexMatchesTotal.length}</h1>
         )}
       </div>
-      <Document
-        loading={""}
-        externalLinkTarget="_blank"
-        file={file}
-        onItemClick={({ pageNumber }) => {
-          setCurrrentPage(Number(pageNumber));
-        }}
-        onLoadSuccess={onDocumentLoadSuccess}
-      >
-        <Page
+      <div ref={wrapperRef}>
+        <Document
           loading={""}
-          scale={1}
-          pageNumber={currentPage}
-          customTextRenderer={({ str, itemIndex }) => {
-            if (!lookupAffectedIndexes.has(itemIndex)) {
-              return <span>{str}</span>;
-            }
-
-            if (middleIndexes.has(itemIndex)) {
-              return <mark>{str}</mark>;
-            }
-
-            let renderStr = str;
-            let trackSameIdx = 0;
-            for (const { begin, end } of matches) {
-              if (begin.divIdx === end.divIdx && begin.divIdx === itemIndex) {
-                renderStr = `${renderStr.slice(
-                  0,
-                  begin.offset + trackSameIdx
-                )}<mark>${renderStr.slice(
-                  begin.offset + trackSameIdx,
-                  end.offset + trackSameIdx
-                )}</mark>${renderStr.slice(end.offset + trackSameIdx)}`;
-                trackSameIdx += 13; // <mark></mark> => 13 character length
-              } else if (
-                begin.divIdx !== end.divIdx &&
-                begin.divIdx === itemIndex
-              ) {
-                renderStr = `${renderStr.slice(
-                  0,
-                  begin.offset
-                )}<mark>${renderStr.slice(begin.offset)}</mark>`;
-              } else if (
-                begin.divIdx !== end.divIdx &&
-                end.divIdx === itemIndex
-              ) {
-                renderStr = `<mark>${renderStr.slice(
-                  0,
-                  end.offset
-                )}</mark>${renderStr.slice(end.offset)}`;
-              }
-            }
-
-            return (
-              <span
-                dangerouslySetInnerHTML={{
-                  __html: renderStr
-                }}
-              ></span>
-            );
+          externalLinkTarget="_blank"
+          file={file}
+          onItemClick={({ pageNumber }) => {
+            setCurrrentPage(Number(pageNumber));
           }}
-        />
-      </Document>
+          onLoadSuccess={onDocumentLoadSuccess}
+        >
+          <Page
+            // renderAnnotationLayer={false}
+            loading={""}
+            scale={1}
+            pageNumber={currentPage}
+            onLoadSuccess={runStuff}
+            customTextRenderer={({ str, itemIndex }) => {
+              if (!lookupAffectedIndexes.has(itemIndex)) {
+                return <span>{str}</span>;
+              }
+
+              if (middleIndexes.has(itemIndex)) {
+                return <mark>{str}</mark>;
+              }
+
+              let renderStr = str;
+              let trackSameIdx = 0;
+              for (const { begin, end } of matches) {
+                if (begin.divIdx === end.divIdx && begin.divIdx === itemIndex) {
+                  renderStr = `${renderStr.slice(
+                    0,
+                    begin.offset + trackSameIdx
+                  )}<mark>${renderStr.slice(
+                    begin.offset + trackSameIdx,
+                    end.offset + trackSameIdx
+                  )}</mark>${renderStr.slice(end.offset + trackSameIdx)}`;
+                  trackSameIdx += 13; // <mark></mark> => 13 character length
+                } else if (
+                  begin.divIdx !== end.divIdx &&
+                  begin.divIdx === itemIndex
+                ) {
+                  renderStr = `${renderStr.slice(
+                    0,
+                    begin.offset
+                  )}<mark>${renderStr.slice(begin.offset)}</mark>`;
+                } else if (
+                  begin.divIdx !== end.divIdx &&
+                  end.divIdx === itemIndex
+                ) {
+                  renderStr = `<mark>${renderStr.slice(
+                    0,
+                    end.offset
+                  )}</mark>${renderStr.slice(end.offset)}`;
+                }
+              }
+
+              return (
+                <span
+                  dangerouslySetInnerHTML={{
+                    __html: renderStr
+                  }}
+                ></span>
+              );
+            }}
+          />
+        </Document>
+      </div>
     </div>
   );
 };
