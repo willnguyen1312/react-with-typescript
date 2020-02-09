@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { range } from "lodash";
 import { Document, Page } from "react-pdf/dist/entry.webpack";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import { PDFDocumentProxy, TextContent } from "pdfjs-dist";
