@@ -140,25 +140,6 @@ const PDF = () => {
   };
   const indexMatchesTotal = calculateTotalMatch();
 
-  const middleIndexes = new Set(
-    matches
-      .map(match => {
-        if (match.end.divIdx - match.begin.divIdx > 1) {
-          return range(match.begin.divIdx + 1, match.end.divIdx);
-        }
-        return [];
-      })
-      .reduce((acc, cur) => acc.concat(cur), [])
-  );
-
-  const affectedIndexes = matches
-    .map(match => {
-      return range(match.begin.divIdx, match.end.divIdx + 1);
-    })
-    .reduce((acc, cur) => acc.concat(cur), []);
-
-  const lookupAffectedIndexes = new Set(affectedIndexes);
-
   const logStuff = () => console.log(numPages);
 
   const runStuff = () => {
@@ -166,7 +147,7 @@ const PDF = () => {
     if (wrapper) {
       setTimeout(() => {
         const as = wrapper.querySelectorAll("a");
-        const es = wrapper.querySelectorAll("img");
+        // const es = wrapper.querySelectorAll("img");
         if (as.length) {
           as[0].addEventListener("click", event => {
             event.preventDefault();
@@ -260,13 +241,13 @@ const PDF = () => {
             pageNumber={currentPage}
             onLoadSuccess={runStuff}
             customTextRenderer={({ str, itemIndex }) => {
-              if (!lookupAffectedIndexes.has(itemIndex)) {
-                return <span>{str}</span>;
-              }
+              // if (!lookupAffectedIndexes.has(itemIndex)) {
+              //   return <span>{str}</span>;
+              // }
 
-              if (middleIndexes.has(itemIndex)) {
-                return <mark>{str}</mark>;
-              }
+              // if (middleIndexes.has(itemIndex)) {
+              //   return <mark>{str}</mark>;
+              // }
 
               let renderStr = str;
               let trackSameIdx = 0;
@@ -296,6 +277,12 @@ const PDF = () => {
                     0,
                     end.offset
                   )}</mark>${renderStr.slice(end.offset)}`;
+                } else if (
+                  end.divIdx - begin.divIdx > 1 &&
+                  itemIndex > begin.divIdx &&
+                  itemIndex < end.divIdx
+                ) {
+                  renderStr = `<mark>${str}</mark>`;
                 }
               }
 
