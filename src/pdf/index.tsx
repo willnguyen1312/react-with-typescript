@@ -14,6 +14,8 @@ type Match = {
   };
 };
 
+type PageMatch = { page: number; indexMatches: number[] };
+
 const PDF = () => {
   const wrapperRef = React.createRef<HTMLDivElement>();
   const [textContents, setTextContents] = useState<TextContent[]>([]);
@@ -22,8 +24,13 @@ const PDF = () => {
   const [searchPhrase, setSearchPhrase] = useState<string>("");
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrrentPage] = useState<number>(1);
-  const [matches, setMatches] = useState<Match[]>([]);
+
+  // Matching stuff
+  const [pageMatches, setPageMatches] = useState<PageMatch[]>([]);
   const [totalMatch, setTotalMatch] = useState<number>(0);
+  const [currentMatch, setCurrentMatch] = useState<number>(0);
+  const [currentPageMatchIdx, setCurrrentPageMatchIdx] = useState<number>(0);
+  const [currentMatchIndex, setCurrentMatchIndex] = useState<number>(0);
 
   useEffect(() => {
     const calculatePhraseMatch = (page: number): number[] => {
@@ -48,8 +55,8 @@ const PDF = () => {
       return result;
     };
 
-    const calculateTotalMatch = () => {
-      const result: { page: number; indexMatches: number[] }[] = [];
+    const calculatePageMatches = () => {
+      const result: PageMatch[] = [];
       if (numPages === 0) {
         return result;
       }
@@ -62,76 +69,27 @@ const PDF = () => {
       return result;
     };
 
-    const converMatches = (indexMatches: number[] = []): Match[] => {
-      if (!indexMatches.length) {
-        return [];
-      }
-
-      const textContentItemsStr = textContents[currentPage - 1].items.map(
-        item => item.str
-      );
-
-      let i = 0,
-        iIndex = 0;
-      const end = textContentItemsStr.length - 1;
-      const queryLen = searchPhrase.length;
-      const result: Match[] = [];
-
-      for (let m = 0, mm = indexMatches.length; m < mm; m++) {
-        // Calculate the start position.
-        let matchIdx = indexMatches[m];
-
-        // Loop over the divIdxs.
-        while (
-          i !== end &&
-          matchIdx >= iIndex + textContentItemsStr[i].length
-        ) {
-          iIndex += textContentItemsStr[i].length;
-          i++;
-        }
-
-        if (i === textContentItemsStr.length) {
-          console.error("Could not find a matching mapping");
-        }
-
-        const match: Partial<Match> = {
-          begin: {
-            divIdx: i,
-            offset: matchIdx - iIndex
-          }
-        };
-
-        matchIdx += queryLen;
-
-        // Somewhat the same array as above, but use > instead of >= to get
-        // the end position right.
-        while (i !== end && matchIdx > iIndex + textContentItemsStr[i].length) {
-          iIndex += textContentItemsStr[i].length;
-          i++;
-        }
-
-        match.end = {
-          divIdx: i,
-          offset: matchIdx - iIndex
-        };
-        result.push(match as Match);
-      }
-      return result as Match[];
-    };
-
-    const indexMatchesTotal = calculateTotalMatch();
-    const totalMatch = indexMatchesTotal.reduce(
+    const pageMatches = calculatePageMatches();
+    const totalMatch = pageMatches.reduce(
       (acc, cur) => acc + cur.indexMatches.length,
       0
     );
 
-    const indexMatches = indexMatchesTotal.find(
+    const pageMatch: PageMatch | undefined = pageMatches.find(
       match => match.page === currentPage
-    )?.indexMatches;
-    const matches: Match[] = converMatches(indexMatches);
-    setMatches(matches);
+    );
+    const newCurrentPage = pageMatch?.page;
+    setPageMatches(pageMatches);
     setTotalMatch(totalMatch);
-  }, [currentPage, numPages, searchPhrase, textContents]);
+    if (totalMatch > 0) {
+      setCurrentMatch(1);
+    }
+    if (newCurrentPage) {
+      setCurrrentPage(newCurrentPage);
+      setCurrentMatchIndex(0);
+      setCurrrentPageMatchIdx(0);
+    }
+  }, [currentMatch, currentPage, numPages, searchPhrase, textContents]);
 
   const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFile(
@@ -157,6 +115,10 @@ const PDF = () => {
 
   const goNextPage = () => setCurrrentPage(Math.min(numPages, currentPage + 1));
 
+  const goPrevMatch = () => {};
+
+  const goNextMatch = () => {};
+
   const logStuff = () => console.log(numPages);
 
   const runStuff = () => {
@@ -174,6 +136,60 @@ const PDF = () => {
         }
       }, 500);
     }
+  };
+
+  const converMatches = (indexMatches: number[] = []): Match[] => {
+    if (!indexMatches.length) {
+      return [];
+    }
+
+    const textContentItemsStr = textContents[currentPage - 1].items.map(
+      item => item.str
+    );
+
+    let i = 0,
+      iIndex = 0;
+    const end = textContentItemsStr.length - 1;
+    const queryLen = searchPhrase.length;
+    const result: Match[] = [];
+
+    for (let m = 0, mm = indexMatches.length; m < mm; m++) {
+      // Calculate the start position.
+      let matchIdx = indexMatches[m];
+
+      // Loop over the divIdxs.
+      while (i !== end && matchIdx >= iIndex + textContentItemsStr[i].length) {
+        iIndex += textContentItemsStr[i].length;
+        i++;
+      }
+
+      if (i === textContentItemsStr.length) {
+        console.error("Could not find a matching mapping");
+      }
+
+      const match: Partial<Match> = {
+        begin: {
+          divIdx: i,
+          offset: matchIdx - iIndex
+        }
+      };
+
+      matchIdx += queryLen;
+
+      // Somewhat the same array as above, but use > instead of >= to get
+      // the end position right.
+      while (i !== end && matchIdx > iIndex + textContentItemsStr[i].length) {
+        iIndex += textContentItemsStr[i].length;
+        i++;
+      }
+
+      match.end = {
+        divIdx: i,
+        offset: matchIdx - iIndex
+      };
+      result.push(match as Match);
+    }
+    return result as Match[];
   };
 
   return (
@@ -224,8 +240,8 @@ const PDF = () => {
               onChange={({ target }) => setSearchPhrase(target.value)}
             />
           </label>
-          <button onClick={goPrevPage}>Previous result</button>
-          <button onClick={goNextPage}>Next result</button>
+          <button onClick={goPrevMatch}>Previous result</button>
+          <button onClick={goNextMatch}>Next result</button>
           <label htmlFor="hightlightAll">
             Hightlight all?
             <input
@@ -237,7 +253,11 @@ const PDF = () => {
             />
           </label>
         </div>
-        {totalMatch > 0 && <h1>Total Matches: {totalMatch}</h1>}
+        {totalMatch > 0 && (
+          <h1>
+            Current Match: {currentMatch}/{totalMatch}
+          </h1>
+        )}
       </div>
       <div ref={wrapperRef}>
         <Document
@@ -257,6 +277,9 @@ const PDF = () => {
             customTextRenderer={({ str, itemIndex }) => {
               let renderStr = str;
               let trackSameIdx = 0;
+              const matches = converMatches(
+                pageMatches[currentPageMatchIdx]?.indexMatches
+              );
               for (const { begin, end } of matches) {
                 if (begin.divIdx === end.divIdx && begin.divIdx === itemIndex) {
                   renderStr = `${renderStr.slice(
