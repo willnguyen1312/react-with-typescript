@@ -235,20 +235,11 @@ const PDF = () => {
           onLoadSuccess={onDocumentLoadSuccess}
         >
           <Page
-            // renderAnnotationLayer={false}
             loading={""}
             scale={1}
             pageNumber={currentPage}
             onLoadSuccess={runStuff}
             customTextRenderer={({ str, itemIndex }) => {
-              // if (!lookupAffectedIndexes.has(itemIndex)) {
-              //   return <span>{str}</span>;
-              // }
-
-              // if (middleIndexes.has(itemIndex)) {
-              //   return <mark>{str}</mark>;
-              // }
-
               let renderStr = str;
               let trackSameIdx = 0;
               for (const { begin, end } of matches) {
