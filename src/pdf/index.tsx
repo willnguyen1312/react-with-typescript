@@ -20,7 +20,7 @@ const PDF = () => {
   const wrapperRef = React.createRef<HTMLDivElement>();
   const [textContents, setTextContents] = useState<TextContent[]>([]);
   const [isHightlightAll, setIsHightlightAll] = useState<boolean>(false);
-  const [file, setFile] = useState<string>("/sample1.pdf");
+  const [file, setFile] = useState<string>("/sample.pdf");
   const [searchPhrase, setSearchPhrase] = useState<string>("");
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrrentPage] = useState<number>(1);
@@ -192,6 +192,13 @@ const PDF = () => {
     return result as Match[];
   };
 
+  let currentMatchItemIndex: number = -1;
+
+  if (pageMatches.length > 0) {
+    currentMatchItemIndex =
+      pageMatches[currentMatch].indexMatches[currentMatchIndex];
+  }
+
   return (
     <div
       style={{
@@ -275,6 +282,9 @@ const PDF = () => {
             pageNumber={currentPage}
             onLoadSuccess={runStuff}
             customTextRenderer={({ str, itemIndex }) => {
+              const isCurrent = currentMatchItemIndex === itemIndex;
+              const color = isCurrent ? "#FFD700" : "#FFD7FF";
+
               let renderStr = str;
               let trackSameIdx = 0;
               const matches = converMatches(
@@ -285,11 +295,11 @@ const PDF = () => {
                   renderStr = `${renderStr.slice(
                     0,
                     begin.offset + trackSameIdx
-                  )}<mark>${renderStr.slice(
+                  )}<mark style="background:${color}">${renderStr.slice(
                     begin.offset + trackSameIdx,
                     end.offset + trackSameIdx
                   )}</mark>${renderStr.slice(end.offset + trackSameIdx)}`;
-                  trackSameIdx += 13; // <mark></mark> => 13 character length
+                  trackSameIdx += 40; // <mar style="background:#xxxxxx" ></mar> => 40 character length
                 } else if (
                   begin.divIdx !== end.divIdx &&
                   begin.divIdx === itemIndex
@@ -297,12 +307,14 @@ const PDF = () => {
                   renderStr = `${renderStr.slice(
                     0,
                     begin.offset
-                  )}<mark>${renderStr.slice(begin.offset)}</mark>`;
+                  )}<mark style="background:${color}">${renderStr.slice(
+                    begin.offset
+                  )}</mark>`;
                 } else if (
                   begin.divIdx !== end.divIdx &&
                   end.divIdx === itemIndex
                 ) {
-                  renderStr = `<mark>${renderStr.slice(
+                  renderStr = `<mark style="background:${color}">${renderStr.slice(
                     0,
                     end.offset
                   )}</mark>${renderStr.slice(end.offset)}`;
@@ -311,7 +323,7 @@ const PDF = () => {
                   itemIndex > begin.divIdx &&
                   itemIndex < end.divIdx
                 ) {
-                  renderStr = `<mark>${str}</mark>`;
+                  renderStr = `<mark style="background:${color}">${str}</mark>`;
                 }
               }
 
