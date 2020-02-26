@@ -1,3 +1,4 @@
+import React from "react";
 import { Subtract, Omit } from "utility-types";
 import MakeCounter, { MakeCounterProps, InjectedCounterProps } from ".";
 
@@ -11,6 +12,6 @@ const makeCounter = <P extends InjectedCounterProps>(
   ...props
 }: MakeCounterHocProps) => (
   <MakeCounter minValue={minValue} maxValue={maxValue}>
-    {injectedProps => <Component {...props as P} {...injectedProps} />}
+    {injectedProps => <Component {...(props as P)} {...injectedProps} />}
   </MakeCounter>
 );
