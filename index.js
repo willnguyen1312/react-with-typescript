@@ -1,5 +1,13 @@
-const fetch = require("isomorphic-fetch");
+const { debounce } = require("lodash");
 
-fetch("https://picsum.photos/id/1037/2000/3000", {
-  method: "HEAD"
-}).then(console.log);
+const debouncedLog = debounce(
+  number => {
+    console.log(number);
+  },
+  250,
+  { leading: true, trailing: false }
+);
+
+debouncedLog(100);
+debouncedLog(200);
+debouncedLog(300);

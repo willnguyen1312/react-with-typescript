@@ -1524,6 +1524,11 @@
   resolved "https://registry.yarnpkg.com/@nodelib/fs.stat/-/fs.stat-1.1.3.tgz#2b5a3ab3f918cca48a8c754c08168e3f03eba61b"
   integrity sha512-shAmDyaQC4H92APFoIaVDHCx5bStIocgvbwQyxPRrbUY20V1EYTbSDchWbuwlMG3V17cprZhA6+78JfB+3DTPw==
 
+"@phuocng/fake-numbers@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@phuocng/fake-numbers/-/fake-numbers-1.3.0.tgz#00d4c3b2195b638e34a1e776eea601eaa2c51261"
+  integrity sha512-mLk2KIqetZpt0B0GL0ZutBgx1N9ywH7+gMmXmxxsSsTS/7tde4+67bxd9ai6SuZ7mWntAuzZySi16oidBOAzxQ==
+
 "@phuocng/react-pdf-viewer@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@phuocng/react-pdf-viewer/-/react-pdf-viewer-1.1.0.tgz#c1d3d326c9480d65bf529e20a5a65d013a9c647f"
@@ -1955,6 +1960,11 @@
   dependencies:
     "@types/react-dom" "*"
     "@types/testing-library__dom" "*"
+
+"@types/unorm@^1.3.27":
+  version "1.3.27"
+  resolved "https://registry.yarnpkg.com/@types/unorm/-/unorm-1.3.27.tgz#60bdb3bb2e5c9ebe6d082df3a13ca992302cca7a"
+  integrity sha1-YL2zuy5cnr5tCC3zoTypkjAsyno=
 
 "@types/webpack-env@^1.15.0":
   version "1.15.0"
@@ -11013,6 +11023,11 @@ universalify@^0.1.0:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/universalify/-/universalify-0.1.2.tgz#b646f69be3942dabcecc9d6639c80dc105efaa66"
   integrity sha512-rBJeI5CXAlmy1pV+617WB9J63U6XcazHHF2f2dbJix4XzpUF0RS3Zbj0FGIOCAva5P/d/GBOYaACQ1w+0azUkg==
+
+unorm@^1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/unorm/-/unorm-1.6.0.tgz#029b289661fba714f1a9af439eb51d9b16c205af"
+  integrity sha512-b2/KCUlYZUeA7JFUuRJZPUtr4gZvBh7tavtv4fvk4+KV9pfGiR6CQAQAWl49ZpR3ts2dk4FYkP7EIgDJoiOLDA==
 
 unpipe@1.0.0, unpipe@~1.0.0:
   version "1.0.0"
